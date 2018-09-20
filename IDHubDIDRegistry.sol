@@ -54,8 +54,8 @@ contract IDHubDIDRegistry {
     return signer;
   }
 
-  function validauthentication(address identity, bytes32 authenticationType, bytes32 authentication) public view returns(bool) {
-    uint validity = delegates[identity][keccak256(authenticationType)][authentication];
+  function validPublicKey(address identity, bytes32 publicKeyType, bytes32 publicKey) public view returns(bool) {
+    uint validity = delegates[identity][keccak256(publicKeyType)][publicKey];
     return (validity > now);
   }
 
@@ -95,8 +95,8 @@ contract IDHubDIDRegistry {
 
   function revokePublicKey(address identity, address actor, bytes32 publicKeyType, bytes32 publicKey) internal onlyOwner(identity, actor) {
     publicKeys[identity][keccak256(publicKeyType)][publicKey] = now;
-    emit DIDPublicKeyChanged(identity, publicKeyType, publicKey, now, changed[identity]);
-    changed[identity] = block.number;
+    emit DIDPublicKeyChanged(identity, publicKeyType, publicKey, now, publicKeyChanged[identity]);
+    publicKeyChanged[identity] = block.number;
   }
 
   function revokePublicKey(address identity, bytes32 publicKeyType, bytes32 publicKey) public {
@@ -125,8 +125,8 @@ contract IDHubDIDRegistry {
 
   function revokeAuthentication(address identity, address actor, bytes32 authenticationType, bytes32 authentication) internal onlyOwner(identity, actor) {
     authentications[identity][keccak256(authenticationType)][authentication] = now;
-    emit DIDAuthenticationChanged(identity, authenticationType, authentication, now, changed[identity]);
-    changed[identity] = block.number;
+    emit DIDAuthenticationChanged(identity, authenticationType, authentication, now, authenticationChanged[identity]);
+    authenticationChanged[identity] = block.number;
   }
 
   function revokeAuthentication(address identity, bytes32 authenticationType, bytes32 authentication) public {
@@ -138,10 +138,9 @@ contract IDHubDIDRegistry {
     revokeAuthentication(identity, checkSignature(identity, sigV, sigR, sigS, hash), authenticationType, authentication);
   }
 
-  /*
   function setAttribute(address identity, address actor, bytes32 name, bytes value, uint validity ) internal onlyOwner(identity, actor) {
-    emit DIDAttributeChanged(identity, name, value, now + validity, changed[identity]);
-    changed[identity] = block.number;
+    emit DIDAttributeChanged(identity, name, value, now + validity, attributeChanged[identity]);
+    attributeChanged[identity] = block.number;
   }
 
   function setAttribute(address identity, bytes32 name, bytes value, uint validity) public {
@@ -154,18 +153,17 @@ contract IDHubDIDRegistry {
   }
 
   function revokeAttribute(address identity, address actor, bytes32 name, bytes value ) internal onlyOwner(identity, actor) {
-    emit DIDAttributeChanged(identity, name, value, 0, changed[identity]);
-    changed[identity] = block.number;
+    emit DIDAttributeChanged(identity, name, value, 0, attributeChanged[identity]);
+    attributeChanged[identity] = block.number;
   }
 
   function revokeAttribute(address identity, bytes32 name, bytes value) public {
     revokeAttribute(identity, msg.sender, name, value);
   }
 
- function revokeAttributeSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes32 name, bytes value) public {
+  function revokeAttributeSigned(address identity, uint8 sigV, bytes32 sigR, bytes32 sigS, bytes32 name, bytes value) public {
     bytes32 hash = keccak256(byte(0x19), byte(0), this, nonce[identity], identity, "revokeAttribute", name, value); 
     revokeAttribute(identity, checkSignature(identity, sigV, sigR, sigS, hash), name, value);
   }
-  */
 
 }
