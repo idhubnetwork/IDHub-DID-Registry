@@ -3,9 +3,9 @@ pragma solidity ^0.4.24;
 contract IDHubDIDRegistry {
 
   mapping(address => address) public owners;
+  mapping(address => mapping(bytes32 => mapping(bytes32 => uint))) public publicKeys;
   mapping(address => mapping(bytes32 => mapping(bytes32 => uint))) public authentications;
-  mapping(address => mapping(bytes32 => mapping(bytes32 => uint))) public Authentications;
-  mapping(address => uint) public authenticationChanged;
+  mapping(address => uint) public publicKeyChanged;
   mapping(address => uint) public authenticationChanged;
   mapping(address => uint) public attributeChanged;
   mapping(address => uint) public nonce;
@@ -15,7 +15,7 @@ contract IDHubDIDRegistry {
     _;
   }
 
-  event DIDauthenticationChanged(
+  event DIDPublicKeyChanged(
     address indexed identity,
     bytes32 authenticationType,
     bytes32 authentication,
@@ -55,18 +55,18 @@ contract IDHubDIDRegistry {
   }
 
   function validPublicKey(address identity, bytes32 publicKeyType, bytes32 publicKey) public view returns(bool) {
-    uint validity = delegates[identity][keccak256(publicKeyType)][publicKey];
+    uint validity = publicKeys[identity][keccak256(publicKeyType)][publicKey];
     return (validity > now);
   }
 
   function validAuthentication(address identity, bytes32 authenticationType, bytes32 authentication) public view returns(bool) {
-    uint validity = delegates[identity][keccak256(authenticationType)][authentication];
+    uint validity = authentications[identity][keccak256(authenticationType)][authentication];
     return (validity > now);
   }
 
   function changeOwner(address identity, address actor, address newOwner) internal onlyOwner(identity, actor) {
     owners[identity] = newOwner;
-    changed[identity] = block.number;
+    // changed[identity] = block.number;
   }
 
   function changeOwner(address identity, address newOwner) public {
@@ -109,7 +109,7 @@ contract IDHubDIDRegistry {
   }
 
   function addAuthentication(address identity, address actor, bytes32 authenticationType, bytes32 authentication, uint validity) internal onlyOwner(identity, actor) {
-    Authentications[identity][keccak256(authenticationType)][authentication] = now + validity;
+    authentications[identity][keccak256(authenticationType)][authentication] = now + validity;
     emit DIDAuthenticationChanged(identity, authenticationType, authentication, now + validity, authenticationChanged[identity]);
     authenticationChanged[identity] = block.number;
   }
