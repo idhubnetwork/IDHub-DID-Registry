@@ -17,8 +17,8 @@ contract IDHubDIDRegistry {
 
   event DIDPublicKeyChanged(
     address indexed identity,
-    bytes32 authenticationType,
-    bytes32 authentication,
+    bytes32 publicKeyType,
+    bytes32 publicKey,
     uint validTo,
     uint previousChange
   );
